@@ -31,7 +31,9 @@ def test_json_bad_requests(app, client):
     def return_json():
         return flask.jsonify(foo=str(flask.request.get_json()))
 
-    rv = client.post("/json", data="malformed", content_type="application/json")
+    rv = client.post("/json",
+                     data="malformed",
+                     content_type="application/json")
     assert rv.status_code == 400
 
 
@@ -44,9 +46,8 @@ def test_json_custom_mimetypes(app, client):
     assert rv.data == b"foo"
 
 
-@pytest.mark.parametrize(
-    "test_value,expected", [(True, '"\\u2603"'), (False, '"\u2603"')]
-)
+@pytest.mark.parametrize("test_value,expected", [(True, '"\\u2603"'),
+                                                 (False, '"\u2603"')])
 def test_json_as_unicode(test_value, expected, app, app_ctx):
 
     app.config["JSON_AS_ASCII"] = test_value
@@ -65,8 +66,8 @@ def test_json_dump_to_file(app, app_ctx):
 
 
 @pytest.mark.parametrize(
-    "test_value", [0, -1, 1, 23, 3.14, "s", "longer string", True, False, None]
-)
+    "test_value",
+    [0, -1, 1, 23, 3.14, "s", "longer string", True, False, None])
 def test_jsonify_basic_types(test_value, app, client):
     url = "/jsonify_basic_types"
     app.add_url_rule(url, url, lambda x=test_value: flask.jsonify(x))
@@ -85,7 +86,9 @@ def test_jsonify_dicts(app, client):
         "f": True,
         "g": False,
         "h": ["test list", 10, False],
-        "i": {"test": "dict"},
+        "i": {
+            "test": "dict"
+        },
     }
 
     @app.route("/kw")
@@ -113,7 +116,9 @@ def test_jsonify_arrays(app, client):
         True,
         False,
         ["test list", 2, False],
-        {"test": "dict"},
+        {
+            "test": "dict"
+        },
     ]
 
     @app.route("/args_unpack")
@@ -131,8 +136,9 @@ def test_jsonify_arrays(app, client):
 
 
 @pytest.mark.parametrize(
-    "value", [datetime.datetime(1973, 3, 11, 6, 30, 45), datetime.date(1975, 1, 5)]
-)
+    "value",
+    [datetime.datetime(1973, 3, 11, 6, 30, 45),
+     datetime.date(1975, 1, 5)])
 def test_jsonify_datetime(app, client, value):
     @app.route("/")
     def index():
@@ -201,7 +207,10 @@ def test_json_attr(app, client):
 
     rv = client.post(
         "/add",
-        data=flask.json.dumps({"a": 1, "b": 2}),
+        data=flask.json.dumps({
+            "a": 1,
+            "b": 2
+        }),
         content_type="application/json",
     )
     assert rv.data == b"3"
@@ -212,12 +221,13 @@ def test_tojson_filter(app, req_ctx):
     # using Flask's dumps.
     rv = flask.render_template_string(
         "const data = {{ data|tojson }};",
-        data={"name": "</script>", "time": datetime.datetime(2021, 2, 1, 7, 15)},
+        data={
+            "name": "</script>",
+            "time": datetime.datetime(2021, 2, 1, 7, 15)
+        },
     )
-    assert rv == (
-        'const data = {"name": "\\u003c/script\\u003e",'
-        ' "time": "Mon, 01 Feb 2021 07:15:00 GMT"};'
-    )
+    assert rv == ('const data = {"name": "\\u003c/script\\u003e",'
+                  ' "time": "Mon, 01 Feb 2021 07:15:00 GMT"};')
 
 
 def test_json_customization(app, client):
@@ -250,7 +260,9 @@ def test_json_customization(app, client):
 
     rv = client.post(
         "/",
-        data=flask.json.dumps({"x": {"_foo": 42}}),
+        data=flask.json.dumps({"x": {
+            "_foo": 42
+        }}),
         content_type="application/json",
     )
     assert rv.data == b'"<42>"'
@@ -258,7 +270,7 @@ def test_json_customization(app, client):
 
 def test_blueprint_json_customization(app, client):
     class X:
-        __slots__ = ("val",)
+        __slots__ = ("val", )
 
         def __init__(self, val):
             self.val = val
@@ -293,7 +305,9 @@ def test_blueprint_json_customization(app, client):
 
     rv = client.post(
         "/bp",
-        data=flask.json.dumps({"x": {"_foo": 42}}),
+        data=flask.json.dumps({"x": {
+            "_foo": 42
+        }}),
         content_type="application/json",
     )
     assert rv.data == b'"<42>"'
@@ -309,9 +323,8 @@ def _has_encoding(name):
         return False
 
 
-@pytest.mark.skipif(
-    not _has_encoding("euc-kr"), reason="The euc-kr encoding is required."
-)
+@pytest.mark.skipif(not _has_encoding("euc-kr"),
+                    reason="The euc-kr encoding is required.")
 def test_modified_url_encoding(app, client):
     class ModifiedRequest(flask.Request):
         url_charset = "euc-kr"

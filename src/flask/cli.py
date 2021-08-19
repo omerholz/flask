@@ -8,16 +8,13 @@ import traceback
 import warnings
 from functools import update_wrapper
 from operator import attrgetter
-from threading import Lock
-from threading import Thread
+from threading import Lock, Thread
 
 import click
 from werkzeug.utils import import_string
 
 from .globals import current_app
-from .helpers import get_debug_flag
-from .helpers import get_env
-from .helpers import get_load_dotenv
+from .helpers import get_debug_flag, get_env, get_load_dotenv
 
 try:
     import dotenv
@@ -56,8 +53,7 @@ def find_best_app(script_info, module):
         raise NoAppException(
             "Detected multiple Flask applications in module"
             f" {module.__name__!r}. Use 'FLASK_APP={module.__name__}:name'"
-            f" to specify the correct one."
-        )
+            f" to specify the correct one.")
 
     # Search for app factory functions.
     for attr_name in ("create_app", "make_app"):
@@ -76,14 +72,12 @@ def find_best_app(script_info, module):
                     f"Detected factory {attr_name!r} in module {module.__name__!r},"
                     " but could not call it without arguments. Use"
                     f" \"FLASK_APP='{module.__name__}:{attr_name}(args)'\""
-                    " to specify arguments."
-                )
+                    " to specify arguments.")
 
     raise NoAppException(
         "Failed to find Flask application or factory in module"
         f" {module.__name__!r}. Use 'FLASK_APP={module.__name__}:name'"
-        " to specify one."
-    )
+        " to specify one.")
 
 
 def call_factory(script_info, app_factory, args=None, kwargs=None):
@@ -106,11 +100,9 @@ def call_factory(script_info, app_factory, args=None, kwargs=None):
     if not args and len(sig.parameters) == 1:
         first_parameter = next(iter(sig.parameters.values()))
 
-        if (
-            first_parameter.default is inspect.Parameter.empty
-            # **kwargs is reported as an empty default, ignore it
-            and first_parameter.kind is not inspect.Parameter.VAR_KEYWORD
-        ):
+        if (first_parameter.default is inspect.Parameter.empty and
+                # **kwargs is reported as an empty default, ignore it
+                first_parameter.kind is not inspect.Parameter.VAR_KEYWORD):
             warnings.warn(
                 "Script info is deprecated and will not be passed as the"
                 " single argument to the app factory function in Flask"
@@ -170,21 +162,22 @@ def find_app_by_string(script_info, module, app_name):
         # Ensure the function name is an attribute name only.
         if not isinstance(expr.func, ast.Name):
             raise NoAppException(
-                f"Function reference must be a simple name: {app_name!r}."
-            )
+                f"Function reference must be a simple name: {app_name!r}.")
 
         name = expr.func.id
 
         # Parse the positional and keyword arguments as literals.
         try:
             args = [ast.literal_eval(arg) for arg in expr.args]
-            kwargs = {kw.arg: ast.literal_eval(kw.value) for kw in expr.keywords}
+            kwargs = {
+                kw.arg: ast.literal_eval(kw.value)
+                for kw in expr.keywords
+            }
         except ValueError:
             # literal_eval gives cryptic error messages, show a generic
             # message with the full expression instead.
             raise NoAppException(
-                f"Failed to parse arguments as literal values: {app_name!r}."
-            )
+                f"Failed to parse arguments as literal values: {app_name!r}.")
     else:
         raise NoAppException(
             f"Failed to parse {app_name!r} as an attribute name or function call."
@@ -194,8 +187,7 @@ def find_app_by_string(script_info, module, app_name):
         attr = getattr(module, name)
     except AttributeError:
         raise NoAppException(
-            f"Failed to find attribute {name!r} in {module.__name__!r}."
-        )
+            f"Failed to find attribute {name!r} in {module.__name__!r}.")
 
     # If the attribute is a function, call it with any args and kwargs
     # to get the real application.
@@ -209,18 +201,15 @@ def find_app_by_string(script_info, module, app_name):
             raise NoAppException(
                 f"The factory {app_name!r} in module"
                 f" {module.__name__!r} could not be called with the"
-                " specified arguments."
-            )
+                " specified arguments.")
     else:
         app = attr
 
     if isinstance(app, Flask):
         return app
 
-    raise NoAppException(
-        "A valid Flask application was not obtained from"
-        f" '{module.__name__}:{app_name}'."
-    )
+    raise NoAppException("A valid Flask application was not obtained from"
+                         f" '{module.__name__}:{app_name}'.")
 
 
 def prepare_import(path):
@@ -263,8 +252,7 @@ def locate_app(script_info, module_name, app_name, raise_if_not_found=True):
         if sys.exc_info()[2].tb_next:
             raise NoAppException(
                 f"While importing {module_name!r}, an ImportError was"
-                f" raised:\n\n{traceback.format_exc()}"
-            )
+                f" raised:\n\n{traceback.format_exc()}")
         elif raise_if_not_found:
             raise NoAppException(f"Could not import {module_name!r}.")
         else:
@@ -283,6 +271,7 @@ def get_version(ctx, param, value):
         return
 
     import werkzeug
+
     from . import __version__
 
     click.echo(
@@ -373,7 +362,10 @@ class ScriptInfo:
     onwards as click object.
     """
 
-    def __init__(self, app_import_path=None, create_app=None, set_debug_flag=True):
+    def __init__(self,
+                 app_import_path=None,
+                 create_app=None,
+                 set_debug_flag=True):
         #: Optionally the import path for the Flask application.
         self.app_import_path = app_import_path or os.environ.get("FLASK_APP")
         #: Optionally a function that is passed the script info to create
@@ -400,14 +392,17 @@ class ScriptInfo:
         else:
             if self.app_import_path:
                 path, name = (
-                    re.split(r":(?![\\/])", self.app_import_path, 1) + [None]
-                )[:2]
+                    re.split(r":(?![\\/])", self.app_import_path, 1) +
+                    [None])[:2]
                 import_name = prepare_import(path)
                 app = locate_app(self, import_name, name)
             else:
                 for path in ("wsgi.py", "app.py"):
                     import_name = prepare_import(path)
-                    app = locate_app(self, import_name, None, raise_if_not_found=False)
+                    app = locate_app(self,
+                                     import_name,
+                                     None,
+                                     raise_if_not_found=False)
 
                     if app:
                         break
@@ -416,8 +411,7 @@ class ScriptInfo:
             raise NoAppException(
                 "Could not locate a Flask application. You did not provide "
                 'the "FLASK_APP" environment variable, and a "wsgi.py" or '
-                '"app.py" module was not found in the current directory.'
-            )
+                '"app.py" module was not found in the current directory.')
 
         if self.set_debug_flag:
             # Update the app's debug flag through the descriptor so that
@@ -437,7 +431,6 @@ def with_appcontext(f):
     to the ``app.cli`` object then they are wrapped with this function
     by default unless it's disabled.
     """
-
     @click.pass_context
     def decorator(__ctx, *args, **kwargs):
         with __ctx.ensure_object(ScriptInfo).load_app().app_context():
@@ -591,9 +584,8 @@ class FlaskGroup(AppGroup):
         obj = kwargs.get("obj")
 
         if obj is None:
-            obj = ScriptInfo(
-                create_app=self.create_app, set_debug_flag=self.set_debug_flag
-            )
+            obj = ScriptInfo(create_app=self.create_app,
+                             set_debug_flag=self.set_debug_flag)
 
         kwargs["obj"] = obj
         kwargs.setdefault("auto_envvar_prefix", "FLASK")
@@ -604,7 +596,7 @@ def _path_is_ancestor(path, other):
     """Take ``other`` and remove the length of ``path`` from it. Then join it
     to ``path``. If it is the original value, ``path`` is an ancestor of
     ``other``."""
-    return os.path.join(path, other[len(path) :].lstrip(os.sep)) == other
+    return os.path.join(path, other[len(path):].lstrip(os.sep)) == other
 
 
 def load_dotenv(path=None):
@@ -702,7 +694,9 @@ class CertParamType(click.ParamType):
     name = "path"
 
     def __init__(self):
-        self.path_type = click.Path(exists=True, dir_okay=False, resolve_path=True)
+        self.path_type = click.Path(exists=True,
+                                    dir_okay=False,
+                                    resolve_path=True)
 
     def convert(self, value, param, ctx):
         if ssl is None:
@@ -748,22 +742,23 @@ def _validate_key(ctx, param, value):
     if value is not None:
         if is_adhoc:
             raise click.BadParameter(
-                'When "--cert" is "adhoc", "--key" is not used.', ctx, param
-            )
+                'When "--cert" is "adhoc", "--key" is not used.', ctx, param)
 
         if is_context:
             raise click.BadParameter(
-                'When "--cert" is an SSLContext object, "--key is not used.', ctx, param
-            )
+                'When "--cert" is an SSLContext object, "--key is not used.',
+                ctx, param)
 
         if not cert:
-            raise click.BadParameter('"--cert" must also be specified.', ctx, param)
+            raise click.BadParameter('"--cert" must also be specified.', ctx,
+                                     param)
 
         ctx.params["cert"] = cert, value
 
     else:
         if cert and not (is_adhoc or is_context):
-            raise click.BadParameter('Required when using "--cert".', ctx, param)
+            raise click.BadParameter('Required when using "--cert".', ctx,
+                                     param)
 
     return value
 
@@ -781,11 +776,14 @@ class SeparatedPathType(click.Path):
 
 
 @click.command("run", short_help="Run a development server.")
-@click.option("--host", "-h", default="127.0.0.1", help="The interface to bind to.")
+@click.option("--host",
+              "-h",
+              default="127.0.0.1",
+              help="The interface to bind to.")
 @click.option("--port", "-p", default=5000, help="The port to bind to.")
-@click.option(
-    "--cert", type=CertParamType(), help="Specify a certificate file to use HTTPS."
-)
+@click.option("--cert",
+              type=CertParamType(),
+              help="Specify a certificate file to use HTTPS.")
 @click.option(
     "--key",
     type=click.Path(exists=True, dir_okay=False, resolve_path=True),
@@ -820,15 +818,12 @@ class SeparatedPathType(click.Path):
     "--extra-files",
     default=None,
     type=SeparatedPathType(),
-    help=(
-        "Extra files that trigger a reload on change. Multiple paths"
-        f" are separated by {os.path.pathsep!r}."
-    ),
+    help=("Extra files that trigger a reload on change. Multiple paths"
+          f" are separated by {os.path.pathsep!r}."),
 )
 @pass_script_info
-def run_command(
-    info, host, port, reload, debugger, eager_loading, with_threads, cert, extra_files
-):
+def run_command(info, host, port, reload, debugger, eager_loading,
+                with_threads, cert, extra_files):
     """Run a local development server.
 
     This server is for development purposes only. It does not provide
@@ -873,14 +868,13 @@ def shell_command() -> None:
     without having to manually configure the application.
     """
     import code
+
     from .globals import _app_ctx_stack
 
     app = _app_ctx_stack.top.app
-    banner = (
-        f"Python {sys.version} on {sys.platform}\n"
-        f"App: {app.import_name} [{app.env}]\n"
-        f"Instance: {app.instance_path}"
-    )
+    banner = (f"Python {sys.version} on {sys.platform}\n"
+              f"App: {app.import_name} [{app.env}]\n"
+              f"Instance: {app.instance_path}")
     ctx: dict = {}
 
     # Support the regular Python interpreter startup script if someone
@@ -921,10 +915,11 @@ def shell_command() -> None:
     default="endpoint",
     help=(
         'Method to sort routes by. "match" is the order that Flask will match '
-        "routes when dispatching a request."
-    ),
+        "routes when dispatching a request."),
 )
-@click.option("--all-methods", is_flag=True, help="Show HEAD and OPTIONS methods.")
+@click.option("--all-methods",
+              is_flag=True,
+              help="Show HEAD and OPTIONS methods.")
 @with_appcontext
 def routes_command(sort: str, all_methods: bool) -> None:
     """Show all registered routes with endpoints and methods."""
@@ -939,7 +934,8 @@ def routes_command(sort: str, all_methods: bool) -> None:
     if sort in ("endpoint", "rule"):
         rules = sorted(rules, key=attrgetter(sort))
     elif sort == "methods":
-        rules = sorted(rules, key=lambda rule: sorted(rule.methods))  # type: ignore
+        rules = sorted(rules,
+                       key=lambda rule: sorted(rule.methods))  # type: ignore
 
     rule_methods = [
         ", ".join(sorted(rule.methods - ignored_methods))  # type: ignore
@@ -962,8 +958,7 @@ def routes_command(sort: str, all_methods: bool) -> None:
         click.echo(row.format(rule.endpoint, methods, rule.rule).rstrip())
 
 
-cli = FlaskGroup(
-    help="""\
+cli = FlaskGroup(help="""\
 A general utility script for Flask applications.
 
 Provides commands from Flask, extensions, and the application. Loads the
@@ -976,10 +971,9 @@ debug mode.
   {prefix}{cmd} FLASK_ENV=development
   {prefix}flask run
 """.format(
-        cmd="export" if os.name == "posix" else "set",
-        prefix="$ " if os.name == "posix" else "> ",
-    )
-)
+    cmd="export" if os.name == "posix" else "set",
+    prefix="$ " if os.name == "posix" else "> ",
+))
 
 
 def main() -> None:

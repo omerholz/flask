@@ -13,23 +13,21 @@ import pytest
 from _pytest.monkeypatch import notset
 from click.testing import CliRunner
 
-from flask import Blueprint
-from flask import current_app
-from flask import Flask
-from flask.cli import AppGroup
-from flask.cli import DispatchingApp
-from flask.cli import dotenv
-from flask.cli import find_best_app
-from flask.cli import FlaskGroup
-from flask.cli import get_version
-from flask.cli import load_dotenv
-from flask.cli import locate_app
+from flask import Blueprint, Flask, current_app
+from flask.cli import (
+    AppGroup,
+    DispatchingApp,
+    FlaskGroup,
+    NoAppException,
+    ScriptInfo,
+    dotenv,
+    find_best_app,
+    get_version,
+    load_dotenv,
+    locate_app,
+)
 from flask.cli import main as cli_main
-from flask.cli import NoAppException
-from flask.cli import prepare_import
-from flask.cli import run_command
-from flask.cli import ScriptInfo
-from flask.cli import with_appcontext
+from flask.cli import prepare_import, run_command, with_appcontext
 
 cwd = Path.cwd()
 test_path = (Path(__file__) / ".." / "test_apps").resolve()
@@ -181,7 +179,8 @@ def test_find_best_app(test_apps):
         ("test.a.b", cwd, "test.a.b"),
         (test_path / "cliapp.app", test_path, "cliapp.app"),
         # not a Python file, will be caught during import
-        (test_path / "cliapp" / "message.txt", test_path, "cliapp.message.txt"),
+        (test_path / "cliapp" / "message.txt", test_path, "cliapp.message.txt"
+         ),
     ),
 )
 def test_prepare_import(request, value, path, result):
@@ -255,13 +254,18 @@ def test_locate_app_suppress_raise(test_apps):
 
     # only direct import error is suppressed
     with pytest.raises(NoAppException):
-        locate_app(info, "cliapp.importerrorapp", None, raise_if_not_found=False)
+        locate_app(info,
+                   "cliapp.importerrorapp",
+                   None,
+                   raise_if_not_found=False)
 
 
 def test_get_version(test_apps, capsys):
-    from flask import __version__ as flask_version
-    from werkzeug import __version__ as werkzeug_version
     from platform import python_version
+
+    from werkzeug import __version__ as werkzeug_version
+
+    from flask import __version__ as flask_version
 
     class MockCtx:
         resilient_parsing = False
@@ -324,7 +328,6 @@ def test_lazy_load_error(monkeypatch):
     """When using lazy loading, the correct exception should be
     re-raised.
     """
-
     class BadExc(Exception):
         pass
 
@@ -402,7 +405,9 @@ def test_flaskgroup_debug(runner, set_debug_flag):
         app.debug = True
         return app
 
-    @click.group(cls=FlaskGroup, create_app=create_app, set_debug_flag=set_debug_flag)
+    @click.group(cls=FlaskGroup,
+                 create_app=create_app,
+                 set_debug_flag=set_debug_flag)
     def cli(**params):
         pass
 
@@ -482,12 +487,13 @@ class TestRoutes:
         # skip the header and match the start of each row
         for expect, line in zip(order, output.splitlines()[2:]):
             # do this instead of startswith for nicer pytest output
-            assert line[: len(expect)] == expect
+            assert line[:len(expect)] == expect
 
     def test_simple(self, invoke):
         result = invoke(["routes"])
         assert result.exit_code == 0
-        self.expect_order(["aaa_post", "static", "yyy_get_post"], result.output)
+        self.expect_order(["aaa_post", "static", "yyy_get_post"],
+                          result.output)
 
     def test_sort(self, invoke):
         default_output = invoke(["routes"]).output
@@ -518,7 +524,8 @@ class TestRoutes:
         assert "No routes were registered." in result.output
 
 
-need_dotenv = pytest.mark.skipif(dotenv is None, reason="dotenv is not installed")
+need_dotenv = pytest.mark.skipif(dotenv is None,
+                                 reason="dotenv is not installed")
 
 
 @need_dotenv
@@ -579,7 +586,8 @@ def test_run_cert_path():
     with pytest.raises(click.BadParameter):
         run_command.make_context("run", ["--key", __file__])
 
-    ctx = run_command.make_context("run", ["--cert", __file__, "--key", __file__])
+    ctx = run_command.make_context("run",
+                                   ["--cert", __file__, "--key", __file__])
     assert ctx.params["cert"] == (__file__, __file__)
 
 
@@ -591,7 +599,8 @@ def test_run_cert_adhoc(monkeypatch):
         run_command.make_context("run", ["--cert", "adhoc"])
 
     # cryptography installed
-    monkeypatch.setitem(sys.modules, "cryptography", types.ModuleType("cryptography"))
+    monkeypatch.setitem(sys.modules, "cryptography",
+                        types.ModuleType("cryptography"))
     ctx = run_command.make_context("run", ["--cert", "adhoc"])
     assert ctx.params["cert"] == "adhoc"
 
@@ -619,7 +628,8 @@ def test_run_cert_import(monkeypatch):
 
     # no --key with SSLContext
     with pytest.raises(click.BadParameter):
-        run_command.make_context("run", ["--cert", "ssl_context", "--key", __file__])
+        run_command.make_context("run",
+                                 ["--cert", "ssl_context", "--key", __file__])
 
 
 def test_run_cert_no_ssl(monkeypatch):
