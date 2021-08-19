@@ -9,8 +9,7 @@ from datetime import date
 from jinja2.utils import htmlsafe_json_dumps as _jinja_htmlsafe_dumps
 from werkzeug.http import http_date
 
-from ..globals import current_app
-from ..globals import request
+from ..globals import current_app, request
 
 if t.TYPE_CHECKING:
     from ..app import Flask
@@ -68,16 +67,16 @@ class JSONDecoder(_json.JSONDecoder):
     """
 
 
-def _dump_arg_defaults(
-    kwargs: t.Dict[str, t.Any], app: t.Optional["Flask"] = None
-) -> None:
+def _dump_arg_defaults(kwargs: t.Dict[str, t.Any],
+                       app: t.Optional["Flask"] = None) -> None:
     """Inject default arguments for dump functions."""
     if app is None:
         app = current_app
 
     if app:
         cls = app.json_encoder
-        bp = app.blueprints.get(request.blueprint) if request else None  # type: ignore
+        bp = app.blueprints.get(
+            request.blueprint) if request else None  # type: ignore
         if bp is not None and bp.json_encoder is not None:
             cls = bp.json_encoder
 
@@ -89,16 +88,16 @@ def _dump_arg_defaults(
         kwargs.setdefault("cls", JSONEncoder)
 
 
-def _load_arg_defaults(
-    kwargs: t.Dict[str, t.Any], app: t.Optional["Flask"] = None
-) -> None:
+def _load_arg_defaults(kwargs: t.Dict[str, t.Any],
+                       app: t.Optional["Flask"] = None) -> None:
     """Inject default arguments for load functions."""
     if app is None:
         app = current_app
 
     if app:
         cls = app.json_decoder
-        bp = app.blueprints.get(request.blueprint) if request else None  # type: ignore
+        bp = app.blueprints.get(
+            request.blueprint) if request else None  # type: ignore
         if bp is not None and bp.json_decoder is not None:
             cls = bp.json_decoder
 
@@ -145,9 +144,10 @@ def dumps(obj: t.Any, app: t.Optional["Flask"] = None, **kwargs: t.Any) -> str:
     return rv
 
 
-def dump(
-    obj: t.Any, fp: t.IO[str], app: t.Optional["Flask"] = None, **kwargs: t.Any
-) -> None:
+def dump(obj: t.Any,
+         fp: t.IO[str],
+         app: t.Optional["Flask"] = None,
+         **kwargs: t.Any) -> None:
     """Serialize an object to JSON written to a file object.
 
     Takes the same arguments as the built-in :func:`json.dump`, with
@@ -220,7 +220,9 @@ def loads(s: str, app: t.Optional["Flask"] = None, **kwargs: t.Any) -> t.Any:
     return _json.loads(s, **kwargs)
 
 
-def load(fp: t.IO[str], app: t.Optional["Flask"] = None, **kwargs: t.Any) -> t.Any:
+def load(fp: t.IO[str],
+         app: t.Optional["Flask"] = None,
+         **kwargs: t.Any) -> t.Any:
     """Deserialize an object from JSON read from a file object.
 
     Takes the same arguments as the built-in :func:`json.load`, with
@@ -345,7 +347,8 @@ def jsonify(*args: t.Any, **kwargs: t.Any) -> "Response":
         separators = (", ", ": ")
 
     if args and kwargs:
-        raise TypeError("jsonify() behavior undefined when passed both args and kwargs")
+        raise TypeError(
+            "jsonify() behavior undefined when passed both args and kwargs")
     elif len(args) == 1:  # single args are passed directly to dumps()
         data = args[0]
     else:
