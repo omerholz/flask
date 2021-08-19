@@ -30,10 +30,8 @@ class DebugFilesKeyError(KeyError, AssertionError):
         ]
         if form_matches:
             names = ", ".join(repr(x) for x in form_matches)
-            buf.append(
-                "\n\nThe browser instead transmitted some file names. "
-                f"This was submitted: {names}"
-            )
+            buf.append("\n\nThe browser instead transmitted some file names. "
+                       f"This was submitted: {names}")
         self.msg = "".join(buf)
 
     def __str__(self):
@@ -56,18 +54,14 @@ class FormDataRoutingRedirect(AssertionError):
 
         # In case just a slash was appended we can be extra helpful
         if f"{request.base_url}/" == exc.new_url.split("?")[0]:
-            buf.append(
-                "  The URL was defined with a trailing slash so Flask"
-                " will automatically redirect to the URL with the"
-                " trailing slash if it was accessed without one."
-            )
+            buf.append("  The URL was defined with a trailing slash so Flask"
+                       " will automatically redirect to the URL with the"
+                       " trailing slash if it was accessed without one.")
 
-        buf.append(
-            "  Make sure to directly send your"
-            f" {request.method}-request to this URL since we can't make"
-            " browsers or HTTP clients redirect with form data reliably"
-            " or without user interaction."
-        )
+        buf.append("  Make sure to directly send your"
+                   f" {request.method}-request to this URL since we can't make"
+                   " browsers or HTTP clients redirect with form data reliably"
+                   " or without user interaction.")
         buf.append("\n\nNote: this exception is only raised in debug mode")
         AssertionError.__init__(self, "".join(buf).encode("utf-8"))
 
@@ -144,16 +138,18 @@ def explain_template_loading_attempts(app: Flask, template, attempts) -> None:
         info.append("Error: the template could not be found.")
         seems_fishy = True
     elif total_found > 1:
-        info.append("Warning: multiple loaders returned a match for the template.")
+        info.append(
+            "Warning: multiple loaders returned a match for the template.")
         seems_fishy = True
 
     if blueprint is not None and seems_fishy:
         info.append(
             "  The template was looked up from an endpoint that belongs"
-            f" to the blueprint {blueprint!r}."
-        )
-        info.append("  Maybe you did not place a template in the right folder?")
-        info.append("  See https://flask.palletsprojects.com/blueprints/#templates")
+            f" to the blueprint {blueprint!r}.")
+        info.append(
+            "  Maybe you did not place a template in the right folder?")
+        info.append(
+            "  See https://flask.palletsprojects.com/blueprints/#templates")
 
     app.logger.info("\n".join(info))
 
@@ -161,11 +157,9 @@ def explain_template_loading_attempts(app: Flask, template, attempts) -> None:
 def explain_ignored_app_run() -> None:
     if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         warn(
-            Warning(
-                "Silently ignoring app.run() because the application is"
-                " run from the flask command line executable. Consider"
-                ' putting app.run() behind an if __name__ == "__main__"'
-                " guard to silence this warning."
-            ),
+            Warning("Silently ignoring app.run() because the application is"
+                    " run from the flask command line executable. Consider"
+                    ' putting app.run() behind an if __name__ == "__main__"'
+                    " guard to silence this warning."),
             stacklevel=3,
         )

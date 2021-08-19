@@ -1,8 +1,5 @@
 import pytest
-from werkzeug.exceptions import Forbidden
-from werkzeug.exceptions import HTTPException
-from werkzeug.exceptions import InternalServerError
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import Forbidden, HTTPException, InternalServerError, NotFound
 
 import flask
 
@@ -20,8 +17,8 @@ def test_error_handler_no_match(app, client):
         return "custom"
 
     with pytest.raises(
-        AssertionError, match="Custom exceptions must be subclasses of Exception."
-    ):
+            AssertionError,
+            match="Custom exceptions must be subclasses of Exception."):
         app.register_error_handler(UnacceptableCustomException, None)
 
     @app.errorhandler(500)
@@ -210,7 +207,6 @@ def test_default_error_handler():
 
 class TestGenericHandlers:
     """Test how very generic handlers are dispatched to."""
-
     class Custom(Exception):
         pass
 
@@ -249,7 +245,6 @@ class TestGenericHandlers:
         have the same behavior. Both should only receive
         ``InternalServerError``, which might wrap another error.
         """
-
         @app.errorhandler(to_handle)
         def handle_500(e):
             assert isinstance(e, InternalServerError)
@@ -264,7 +259,6 @@ class TestGenericHandlers:
         """``HTTPException`` should only receive ``HTTPException``
         subclasses. It will receive ``404`` routing exceptions.
         """
-
         @app.errorhandler(HTTPException)
         def handle_http(e):
             assert isinstance(e, HTTPException)
@@ -278,7 +272,6 @@ class TestGenericHandlers:
         """Generic ``Exception`` will handle all exceptions directly,
         including ``HTTPExceptions``.
         """
-
         @app.errorhandler(Exception)
         def handle_exception(e):
             return self.report_error(e)

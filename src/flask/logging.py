@@ -46,8 +46,8 @@ def has_level_handler(logger: logging.Logger) -> bool:
 #: ``[%(asctime)s] %(levelname)s in %(module)s: %(message)s``.
 default_handler = logging.StreamHandler(wsgi_errors_stream)  # type: ignore
 default_handler.setFormatter(
-    logging.Formatter("[%(asctime)s] %(levelname)s in %(module)s: %(message)s")
-)
+    logging.Formatter(
+        "[%(asctime)s] %(levelname)s in %(module)s: %(message)s"))
 
 
 def create_logger(app: "Flask") -> logging.Logger:

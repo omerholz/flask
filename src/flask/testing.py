@@ -52,9 +52,8 @@ class EnvironBuilder(werkzeug.test.EnvironBuilder):
         **kwargs: t.Any,
     ) -> None:
         assert not (base_url or subdomain or url_scheme) or (
-            base_url is not None
-        ) != bool(
-            subdomain or url_scheme
+            base_url is not None) != bool(
+                subdomain or url_scheme
         ), 'Cannot pass "subdomain" or "url_scheme" with "base_url".'
 
         if base_url is None:
@@ -70,8 +69,7 @@ class EnvironBuilder(werkzeug.test.EnvironBuilder):
             url = url_parse(path)
             base_url = (
                 f"{url.scheme or url_scheme}://{url.netloc or http_host}"
-                f"/{app_root.lstrip('/')}"
-            )
+                f"/{app_root.lstrip('/')}")
             path = url.path
 
             if url.query:
@@ -118,8 +116,8 @@ class FlaskClient(Client):
 
     @contextmanager
     def session_transaction(
-        self, *args: t.Any, **kwargs: t.Any
-    ) -> t.Generator[SessionMixin, None, None]:
+            self, *args: t.Any,
+            **kwargs: t.Any) -> t.Generator[SessionMixin, None, None]:
         """When used in combination with a ``with`` statement this opens a
         session transaction.  This can be used to modify the session that
         the test client uses.  Once the ``with`` block is left the session is
@@ -138,8 +136,7 @@ class FlaskClient(Client):
         """
         if self.cookie_jar is None:
             raise RuntimeError(
-                "Session transactions only make sense with cookies enabled."
-            )
+                "Session transactions only make sense with cookies enabled.")
         app = self.application
         environ_overrides = kwargs.setdefault("environ_overrides", {})
         self.cookie_jar.inject_wsgi(environ_overrides)
@@ -198,14 +195,15 @@ class FlaskClient(Client):
                 request = builder.get_request()
             elif isinstance(arg, dict):
                 request = EnvironBuilder.from_environ(
-                    arg, app=self.application, environ_base=copy_environ({})
-                ).get_request()
+                    arg, app=self.application,
+                    environ_base=copy_environ({})).get_request()
             elif isinstance(arg, BaseRequest):
                 request = copy(arg)
                 request.environ = copy_environ(request.environ)
 
         if request is None:
-            kwargs["environ_base"] = copy_environ(kwargs.get("environ_base", {}))
+            kwargs["environ_base"] = copy_environ(
+                kwargs.get("environ_base", {}))
             builder = EnvironBuilder(self.application, *args, **kwargs)
 
             try:
@@ -226,9 +224,8 @@ class FlaskClient(Client):
         self.preserve_context = True
         return self
 
-    def __exit__(
-        self, exc_type: type, exc_value: BaseException, tb: TracebackType
-    ) -> None:
+    def __exit__(self, exc_type: type, exc_value: BaseException,
+                 tb: TracebackType) -> None:
         self.preserve_context = False
 
         # Normally the request context is preserved until the next
@@ -255,8 +252,10 @@ class FlaskCliRunner(CliRunner):
         super().__init__(**kwargs)
 
     def invoke(  # type: ignore
-        self, cli: t.Any = None, args: t.Any = None, **kwargs: t.Any
-    ) -> t.Any:
+            self,
+            cli: t.Any = None,
+            args: t.Any = None,
+            **kwargs: t.Any) -> t.Any:
         """Invokes a CLI command in an isolated environment. See
         :meth:`CliRunner.invoke <click.testing.CliRunner.invoke>` for
         full method documentation. See :ref:`testing-cli` for examples.

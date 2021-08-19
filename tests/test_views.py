@@ -73,7 +73,8 @@ def test_view_inheritance(app, client):
 
     app.add_url_rule("/", view_func=BetterIndex.as_view("index"))
 
-    meths = parse_set_header(client.open("/", method="OPTIONS").headers["Allow"])
+    meths = parse_set_header(
+        client.open("/", method="OPTIONS").headers["Allow"])
     assert sorted(meths) == ["DELETE", "GET", "HEAD", "OPTIONS", "POST"]
 
 
@@ -141,7 +142,8 @@ def test_view_provide_automatic_options_attr():
 def test_implicit_head(app, client):
     class Index(flask.views.MethodView):
         def get(self):
-            return flask.Response("Blub", headers={"X-Method": flask.request.method})
+            return flask.Response("Blub",
+                                  headers={"X-Method": flask.request.method})
 
     app.add_url_rule("/", view_func=Index.as_view("index"))
     rv = client.get("/")

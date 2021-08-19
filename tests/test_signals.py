@@ -7,9 +7,8 @@ except ImportError:
 
 import flask
 
-pytestmark = pytest.mark.skipif(
-    blinker is None, reason="Signals require the blinker library."
-)
+pytestmark = pytest.mark.skipif(blinker is None,
+                                reason="Signals require the blinker library.")
 
 
 def test_template_rendered(app, client):

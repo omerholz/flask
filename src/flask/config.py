@@ -9,7 +9,9 @@ from werkzeug.utils import import_string
 class ConfigAttribute:
     """Makes an attribute forward to the config"""
 
-    def __init__(self, name: str, get_converter: t.Optional[t.Callable] = None) -> None:
+    def __init__(self,
+                 name: str,
+                 get_converter: t.Optional[t.Callable] = None) -> None:
         self.__name__ = name
         self.get_converter = get_converter
 
@@ -69,7 +71,9 @@ class Config(dict):
     :param defaults: an optional dictionary of default values
     """
 
-    def __init__(self, root_path: str, defaults: t.Optional[dict] = None) -> None:
+    def __init__(self,
+                 root_path: str,
+                 defaults: t.Optional[dict] = None) -> None:
         dict.__init__(self, defaults or {})
         self.root_path = root_path
 
@@ -93,8 +97,7 @@ class Config(dict):
                 f"The environment variable {variable_name!r} is not set"
                 " and as such configuration could not be loaded. Set"
                 " this variable and make it point to a configuration"
-                " file"
-            )
+                " file")
         return self.from_pyfile(rv, silent=silent)
 
     def from_pyfile(self, filename: str, silent: bool = False) -> bool:
@@ -118,7 +121,8 @@ class Config(dict):
             with open(filename, mode="rb") as config_file:
                 exec(compile(config_file.read(), filename, "exec"), d.__dict__)
         except OSError as e:
-            if silent and e.errno in (errno.ENOENT, errno.EISDIR, errno.ENOTDIR):
+            if silent and e.errno in (errno.ENOENT, errno.EISDIR,
+                                      errno.ENOTDIR):
                 return False
             e.strerror = f"Unable to load configuration file ({e.strerror})"
             raise
@@ -217,6 +221,7 @@ class Config(dict):
         .. versionadded:: 0.11
         """
         import warnings
+
         from . import json
 
         warnings.warn(
@@ -227,9 +232,9 @@ class Config(dict):
         )
         return self.from_file(filename, json.load, silent=silent)
 
-    def from_mapping(
-        self, mapping: t.Optional[t.Mapping[str, t.Any]] = None, **kwargs: t.Any
-    ) -> bool:
+    def from_mapping(self,
+                     mapping: t.Optional[t.Mapping[str, t.Any]] = None,
+                     **kwargs: t.Any) -> bool:
         """Updates the config like :meth:`update` ignoring items with non-upper
         keys.
 
@@ -244,9 +249,10 @@ class Config(dict):
                 self[key] = value
         return True
 
-    def get_namespace(
-        self, namespace: str, lowercase: bool = True, trim_namespace: bool = True
-    ) -> t.Dict[str, t.Any]:
+    def get_namespace(self,
+                      namespace: str,
+                      lowercase: bool = True,
+                      trim_namespace: bool = True) -> t.Dict[str, t.Any]:
         """Returns a dictionary containing a subset of configuration options
         that match the specified namespace/prefix. Example usage::
 
@@ -279,7 +285,7 @@ class Config(dict):
             if not k.startswith(namespace):
                 continue
             if trim_namespace:
-                key = k[len(namespace) :]
+                key = k[len(namespace):]
             else:
                 key = k
             if lowercase:

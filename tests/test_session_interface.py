@@ -7,7 +7,6 @@ def test_open_session_with_endpoint():
     while loading the session, RequestContext.match_request() can be
     called manually.
     """
-
     class MySessionInterface(SessionInterface):
         def save_session(self, app, session, response):
             pass

@@ -1,4 +1,5 @@
 import pytest
+
 from flask import template_rendered
 
 
@@ -19,9 +20,8 @@ def test_index(app, client, path, template_name):
         client.get(path)
 
 
-@pytest.mark.parametrize(
-    ("a", "b", "result"), ((2, 3, 5), (2.5, 3, 5.5), (2, None, 2), (2, "b", 2))
-)
+@pytest.mark.parametrize(("a", "b", "result"),
+                         ((2, 3, 5), (2.5, 3, 5.5), (2, None, 2), (2, "b", 2)))
 def test_add(client, a, b, result):
     response = client.post("/add", data={"a": a, "b": b})
     assert response.get_json()["result"] == result

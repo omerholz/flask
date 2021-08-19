@@ -2,13 +2,10 @@ import typing as t
 
 from jinja2 import BaseLoader
 from jinja2 import Environment as BaseEnvironment
-from jinja2 import Template
-from jinja2 import TemplateNotFound
+from jinja2 import Template, TemplateNotFound
 
-from .globals import _app_ctx_stack
-from .globals import _request_ctx_stack
-from .signals import before_render_template
-from .signals import template_rendered
+from .globals import _app_ctx_stack, _request_ctx_stack
+from .signals import before_render_template, template_rendered
 
 if t.TYPE_CHECKING:
     from .app import Flask
@@ -52,8 +49,8 @@ class DispatchingJinjaLoader(BaseLoader):
         self.app = app
 
     def get_source(  # type: ignore
-        self, environment: Environment, template: str
-    ) -> t.Tuple[str, t.Optional[str], t.Optional[t.Callable]]:
+        self, environment: Environment, template: str) -> t.Tuple[
+            str, t.Optional[str], t.Optional[t.Callable]]:
         if self.app.config["EXPLAIN_TEMPLATE_LOADING"]:
             return self._get_source_explained(environment, template)
         return self._get_source_fast(environment, template)
@@ -62,10 +59,10 @@ class DispatchingJinjaLoader(BaseLoader):
         self, environment: Environment, template: str
     ) -> t.Tuple[str, t.Optional[str], t.Optional[t.Callable]]:
         attempts = []
-        rv: t.Optional[t.Tuple[str, t.Optional[str], t.Optional[t.Callable[[], bool]]]]
-        trv: t.Optional[
-            t.Tuple[str, t.Optional[str], t.Optional[t.Callable[[], bool]]]
-        ] = None
+        rv: t.Optional[t.Tuple[str, t.Optional[str],
+                               t.Optional[t.Callable[[], bool]]]]
+        trv: t.Optional[t.Tuple[str, t.Optional[str],
+                                t.Optional[t.Callable[[], bool]]]] = None
 
         for srcobj, loader in self._iter_loaders(template):
             try:
@@ -130,9 +127,8 @@ def _render(template: Template, context: dict, app: "Flask") -> str:
     return rv
 
 
-def render_template(
-    template_name_or_list: t.Union[str, t.List[str]], **context: t.Any
-) -> str:
+def render_template(template_name_or_list: t.Union[str, t.List[str]],
+                    **context: t.Any) -> str:
     """Renders a template from the template folder with the given
     context.
 
