@@ -1,21 +1,28 @@
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
 
 from flask import Markup
-from flask.json.tag import JSONTag
-from flask.json.tag import TaggedJSONSerializer
+from flask.json.tag import JSONTag, TaggedJSONSerializer
 
 
 @pytest.mark.parametrize(
     "data",
     (
-        {" t": (1, 2, 3)},
-        {" t__": b"a"},
-        {" di": " di"},
-        {"x": (1, 2, 3), "y": 4},
+        {
+            " t": (1, 2, 3)
+        },
+        {
+            " t__": b"a"
+        },
+        {
+            " di": " di"
+        },
+        {
+            "x": (1, 2, 3),
+            "y": 4
+        },
         (1, 2, 3),
         [(1, 2, 3)],
         b"\xff",

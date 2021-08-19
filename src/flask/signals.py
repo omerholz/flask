@@ -8,7 +8,9 @@ except ImportError:
     signals_available = False
 
     class Namespace:  # type: ignore
-        def signal(self, name: str, doc: t.Optional[str] = None) -> "_FakeSignal":
+        def signal(self,
+                   name: str,
+                   doc: t.Optional[str] = None) -> "_FakeSignal":
             return _FakeSignal(name, doc)
 
     class _FakeSignal:
@@ -28,8 +30,7 @@ except ImportError:
         def _fail(self, *args: t.Any, **kwargs: t.Any) -> t.Any:
             raise RuntimeError(
                 "Signalling support is unavailable because the blinker"
-                " library is not installed."
-            )
+                " library is not installed.")
 
         connect = connect_via = connected_to = temporarily_connected_to = _fail
         disconnect = _fail
@@ -40,7 +41,6 @@ except ImportError:
 # The namespace for code signals.  If you are not Flask code, do
 # not put signals in here.  Create your own namespace instead.
 _signals = Namespace()
-
 
 # Core signals.  For usage examples grep the source code or consult
 # the API documentation in docs/api.rst as well as docs/signals.rst

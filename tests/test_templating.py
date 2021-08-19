@@ -36,7 +36,8 @@ def test_request_less_rendering(app, app_ctx):
     def context_processor():
         return dict(foo=42)
 
-    rv = flask.render_template_string("Hello {{ config.WORLD_NAME }} {{ foo }}")
+    rv = flask.render_template_string(
+        "Hello {{ config.WORLD_NAME }} {{ foo }}")
     assert rv == "Hello Special World 42"
 
 
@@ -45,14 +46,12 @@ def test_standard_context(app, client):
     def index():
         flask.g.foo = 23
         flask.session["test"] = "aha"
-        return flask.render_template_string(
-            """
+        return flask.render_template_string("""
             {{ request.args.foo }}
             {{ g.foo }}
             {{ config.DEBUG }}
             {{ session.test }}
-        """
-        )
+        """)
 
     rv = client.get("/?foo=42")
     assert rv.data.split() == [b"42", b"23", b"False", b"aha"]
@@ -63,9 +62,9 @@ def test_escaping(app, client):
 
     @app.route("/")
     def index():
-        return flask.render_template(
-            "escaping_template.html", text=text, html=flask.Markup(text)
-        )
+        return flask.render_template("escaping_template.html",
+                                     text=text,
+                                     html=flask.Markup(text))
 
     lines = client.get("/").data.splitlines()
     assert lines == [
@@ -83,9 +82,9 @@ def test_no_escaping(app, client):
 
     @app.route("/")
     def index():
-        return flask.render_template(
-            "non_escaping_template.txt", text=text, html=flask.Markup(text)
-        )
+        return flask.render_template("non_escaping_template.txt",
+                                     text=text,
+                                     html=flask.Markup(text))
 
     lines = client.get("/").data.splitlines()
     assert lines == [
@@ -101,7 +100,8 @@ def test_no_escaping(app, client):
 
 
 def test_escaping_without_template_filename(app, client, req_ctx):
-    assert flask.render_template_string("{{ foo }}", foo="<test>") == "&lt;test&gt;"
+    assert flask.render_template_string("{{ foo }}",
+                                        foo="<test>") == "&lt;test&gt;"
     assert flask.render_template("mail.txt", foo="<test>") == "<test> Mail"
 
 
@@ -420,9 +420,8 @@ def test_template_loader_debugging(test_apps, monkeypatch):
 
     with app.test_client() as c:
         monkeypatch.setitem(app.config, "EXPLAIN_TEMPLATE_LOADING", True)
-        monkeypatch.setattr(
-            logging.getLogger("blueprintapp"), "handlers", [_TestHandler()]
-        )
+        monkeypatch.setattr(logging.getLogger("blueprintapp"), "handlers",
+                            [_TestHandler()])
 
         with pytest.raises(TemplateNotFound) as excinfo:
             c.get("/missing")

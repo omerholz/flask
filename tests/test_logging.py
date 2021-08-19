@@ -4,9 +4,7 @@ from io import StringIO
 
 import pytest
 
-from flask.logging import default_handler
-from flask.logging import has_level_handler
-from flask.logging import wsgi_errors_stream
+from flask.logging import default_handler, has_level_handler, wsgi_errors_stream
 
 
 @pytest.fixture(autouse=True)
@@ -19,7 +17,8 @@ def reset_logging(pytestconfig):
     logger.handlers = []
     logger.setLevel(logging.NOTSET)
 
-    logging_plugin = pytestconfig.pluginmanager.unregister(name="logging-plugin")
+    logging_plugin = pytestconfig.pluginmanager.unregister(
+        name="logging-plugin")
 
     yield
 

@@ -73,7 +73,8 @@ def client(app):
 
 @pytest.fixture
 def test_apps(monkeypatch):
-    monkeypatch.syspath_prepend(os.path.join(os.path.dirname(__file__), "test_apps"))
+    monkeypatch.syspath_prepend(
+        os.path.join(os.path.dirname(__file__), "test_apps"))
     original_modules = set(sys.modules.keys())
 
     yield
@@ -116,7 +117,8 @@ def limit_loader(request, monkeypatch):
 
         def __getattr__(self, name):
             if name in {"archive", "get_filename"}:
-                raise AttributeError(f"Mocking a loader which does not have {name!r}.")
+                raise AttributeError(
+                    f"Mocking a loader which does not have {name!r}.")
             return getattr(self.loader, name)
 
     old_get_loader = pkgutil.get_loader
@@ -144,11 +146,9 @@ def modules_tmpdir_prefix(modules_tmpdir, monkeypatch):
 @pytest.fixture
 def site_packages(modules_tmpdir, monkeypatch):
     """Create a fake site-packages."""
-    rv = (
-        modules_tmpdir.mkdir("lib")
-        .mkdir(f"python{sys.version_info.major}.{sys.version_info.minor}")
-        .mkdir("site-packages")
-    )
+    rv = (modules_tmpdir.mkdir("lib").mkdir(
+        f"python{sys.version_info.major}.{sys.version_info.minor}").mkdir(
+            "site-packages"))
     monkeypatch.syspath_prepend(str(rv))
     return rv
 
@@ -157,15 +157,13 @@ def site_packages(modules_tmpdir, monkeypatch):
 def install_egg(modules_tmpdir, monkeypatch):
     """Generate egg from package name inside base and put the egg into
     sys.path."""
-
     def inner(name, base=modules_tmpdir):
         base.join(name).ensure_dir()
         base.join(name).join("__init__.py").ensure()
 
         egg_setup = base.join("setup.py")
         egg_setup.write(
-            textwrap.dedent(
-                f"""
+            textwrap.dedent(f"""
                 from setuptools import setup
                 setup(
                     name="{name}",
@@ -173,16 +171,13 @@ def install_egg(modules_tmpdir, monkeypatch):
                     packages=["site_egg"],
                     zip_safe=True,
                 )
-                """
-            )
-        )
+                """))
 
         import subprocess
 
-        subprocess.check_call(
-            [sys.executable, "setup.py", "bdist_egg"], cwd=str(modules_tmpdir)
-        )
-        (egg_path,) = modules_tmpdir.join("dist/").listdir()
+        subprocess.check_call([sys.executable, "setup.py", "bdist_egg"],
+                              cwd=str(modules_tmpdir))
+        (egg_path, ) = modules_tmpdir.join("dist/").listdir()
         monkeypatch.syspath_prepend(str(egg_path))
         return egg_path
 

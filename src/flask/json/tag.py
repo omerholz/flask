@@ -41,23 +41,20 @@ be processed before ``dict``.
     app.session_interface.serializer.register(TagOrderedDict, index=0)
 """
 import typing as t
-from base64 import b64decode
-from base64 import b64encode
+from base64 import b64decode, b64encode
 from datetime import datetime
 from uuid import UUID
 
 from markupsafe import Markup
-from werkzeug.http import http_date
-from werkzeug.http import parse_date
+from werkzeug.http import http_date, parse_date
 
-from ..json import dumps
-from ..json import loads
+from ..json import dumps, loads
 
 
 class JSONTag:
     """Base class for defining type tags for :class:`TaggedJSONSerializer`."""
 
-    __slots__ = ("serializer",)
+    __slots__ = ("serializer", )
 
     #: The tag to mark the serialized object with. If ``None``, this tag is
     #: only used as an intermediate step during tagging.
@@ -98,11 +95,8 @@ class TagDict(JSONTag):
     key = " di"
 
     def check(self, value: t.Any) -> bool:
-        return (
-            isinstance(value, dict)
-            and len(value) == 1
-            and next(iter(value)) in self.serializer.tags
-        )
+        return (isinstance(value, dict) and len(value) == 1 and
+                next(iter(value)) in self.serializer.tags)
 
     def to_json(self, value: t.Any) -> t.Any:
         key = next(iter(value))

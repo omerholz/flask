@@ -5,17 +5,14 @@ from types import TracebackType
 
 from werkzeug.exceptions import HTTPException
 
-from .globals import _app_ctx_stack
-from .globals import _request_ctx_stack
-from .signals import appcontext_popped
-from .signals import appcontext_pushed
+from .globals import _app_ctx_stack, _request_ctx_stack
+from .signals import appcontext_popped, appcontext_pushed
 from .typing import AfterRequestCallable
 
 if t.TYPE_CHECKING:
     from .app import Flask
     from .sessions import SessionMixin
     from .wrappers import Request
-
 
 # a singleton sentinel value for parameter defaults
 _sentinel = object()
@@ -163,8 +160,7 @@ def copy_current_request_context(f: t.Callable) -> t.Callable:
         raise RuntimeError(
             "This decorator can only be used at local scopes "
             "when a request context is on the stack.  For instance within "
-            "view functions."
-        )
+            "view functions.")
     reqctx = top.copy()
 
     def wrapper(*args, **kwargs):
@@ -240,7 +236,9 @@ class AppContext:
         _app_ctx_stack.push(self)
         appcontext_pushed.send(self.app)
 
-    def pop(self, exc: t.Optional[BaseException] = _sentinel) -> None:  # type: ignore
+    def pop(self,
+            exc: t.Optional[BaseException] = _sentinel
+            ) -> None:  # type: ignore
         """Pops the app context."""
         try:
             self._refcnt -= 1
@@ -257,9 +255,8 @@ class AppContext:
         self.push()
         return self
 
-    def __exit__(
-        self, exc_type: type, exc_value: BaseException, tb: TracebackType
-    ) -> None:
+    def __exit__(self, exc_type: type, exc_value: BaseException,
+                 tb: TracebackType) -> None:
         self.pop(exc_value)
 
 
@@ -401,7 +398,8 @@ class RequestContext:
         # pushed, otherwise stream_with_context loses the session.
         if self.session is None:
             session_interface = self.app.session_interface
-            self.session = session_interface.open_session(self.app, self.request)
+            self.session = session_interface.open_session(
+                self.app, self.request)
 
             if self.session is None:
                 self.session = session_interface.make_null_session(self.app)
@@ -411,7 +409,9 @@ class RequestContext:
         if self.url_adapter is not None:
             self.match_request()
 
-    def pop(self, exc: t.Optional[BaseException] = _sentinel) -> None:  # type: ignore
+    def pop(self,
+            exc: t.Optional[BaseException] = _sentinel
+            ) -> None:  # type: ignore
         """Pops the request context and unbinds it by doing that.  This will
         also trigger the execution of functions registered by the
         :meth:`~flask.Flask.teardown_request` decorator.
@@ -452,8 +452,7 @@ class RequestContext:
 
     def auto_pop(self, exc: t.Optional[BaseException]) -> None:
         if self.request.environ.get("flask._preserve_context") or (
-            exc is not None and self.app.preserve_context_on_exception
-        ):
+                exc is not None and self.app.preserve_context_on_exception):
             self.preserved = True
             self._preserved_exc = exc  # type: ignore
         else:
@@ -463,9 +462,8 @@ class RequestContext:
         self.push()
         return self
 
-    def __exit__(
-        self, exc_type: type, exc_value: BaseException, tb: TracebackType
-    ) -> None:
+    def __exit__(self, exc_type: type, exc_value: BaseException,
+                 tb: TracebackType) -> None:
         # do not pop the request stack if we are in debug mode and an
         # exception happened.  This will allow the debugger to still
         # access the request object in the interactive shell.  Furthermore
@@ -474,7 +472,5 @@ class RequestContext:
         self.auto_pop(exc_value)
 
     def __repr__(self) -> str:
-        return (
-            f"<{type(self).__name__} {self.request.url!r}"
-            f" [{self.request.method}] of {self.app.name}>"
-        )
+        return (f"<{type(self).__name__} {self.request.url!r}"
+                f" [{self.request.method}] of {self.app.name}>")

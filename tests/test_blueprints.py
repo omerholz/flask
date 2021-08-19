@@ -40,7 +40,8 @@ def test_blueprint_specific_error_handling(app, client):
 
     assert client.get("/frontend-no").data == b"frontend says no"
     assert client.get("/backend-no").data == b"backend says no"
-    assert client.get("/what-is-a-sideend").data == b"application itself says no"
+    assert client.get(
+        "/what-is-a-sideend").data == b"application itself says no"
 
 
 def test_blueprint_specific_user_error_handling(app, client):
@@ -61,7 +62,8 @@ def test_blueprint_specific_user_error_handling(app, client):
         assert isinstance(e, MyFunctionException)
         return "bam"
 
-    blue.register_error_handler(MyFunctionException, my_function_exception_handler)
+    blue.register_error_handler(MyFunctionException,
+                                my_function_exception_handler)
 
     @blue.route("/decorator")
     def blue_deco_test():
@@ -140,7 +142,10 @@ def test_blueprint_url_defaults(app, client):
         return str(bar)
 
     app.register_blueprint(bp, url_prefix="/1", url_defaults={"bar": 23})
-    app.register_blueprint(bp, name="test2", url_prefix="/2", url_defaults={"bar": 19})
+    app.register_blueprint(bp,
+                           name="test2",
+                           url_prefix="/2",
+                           url_defaults={"bar": 19})
 
     assert client.get("/1/foo").data == b"23/42"
     assert client.get("/2/foo").data == b"19/42"
@@ -206,10 +211,8 @@ def test_templates_and_static(test_apps):
         app.config["SEND_FILE_MAX_AGE_DEFAULT"] = max_age_default
 
     with app.test_request_context():
-        assert (
-            flask.url_for("admin.static", filename="test.txt")
-            == "/admin/static/test.txt"
-        )
+        assert (flask.url_for("admin.static",
+                              filename="test.txt") == "/admin/static/test.txt")
 
     with app.test_request_context():
         with pytest.raises(TemplateNotFound) as e:
@@ -629,10 +632,10 @@ def test_add_template_test_with_name_and_template(app, client):
 def test_context_processing(app, client):
     answer_bp = flask.Blueprint("answer_bp", __name__)
 
-    template_string = lambda: flask.render_template_string(  # noqa: E731
-        "{% if notanswer %}{{ notanswer }} is not the answer. {% endif %}"
-        "{% if answer %}{{ answer }} is the answer.{% endif %}"
-    )
+    def template_string():
+        return flask.render_template_string(  # noqa: E731
+            "{% if notanswer %}{{ notanswer }} is not the answer. {% endif %}"
+            "{% if answer %}{{ answer }} is the answer.{% endif %}")
 
     # App global context processor
     @answer_bp.app_context_processor

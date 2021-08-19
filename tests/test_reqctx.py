@@ -1,8 +1,7 @@
 import pytest
 
 import flask
-from flask.sessions import SecureCookieSessionInterface
-from flask.sessions import SessionInterface
+from flask.sessions import SecureCookieSessionInterface, SessionInterface
 
 try:
     from greenlet import greenlet
@@ -69,32 +68,27 @@ def test_proper_test_request_context(app):
         return None
 
     with app.test_request_context("/"):
-        assert (
-            flask.url_for("index", _external=True)
-            == "http://localhost.localdomain:5000/"
-        )
+        assert (flask.url_for(
+            "index", _external=True) == "http://localhost.localdomain:5000/")
 
     with app.test_request_context("/"):
-        assert (
-            flask.url_for("sub", _external=True)
-            == "http://foo.localhost.localdomain:5000/"
-        )
+        assert (flask.url_for(
+            "sub", _external=True) == "http://foo.localhost.localdomain:5000/")
 
     # suppress Werkzeug 0.15 warning about name mismatch
     with pytest.warns(None):
         with app.test_request_context(
-            "/", environ_overrides={"HTTP_HOST": "localhost"}
-        ):
+                "/", environ_overrides={"HTTP_HOST": "localhost"}):
             pass
 
     app.config.update(SERVER_NAME="localhost")
-    with app.test_request_context("/", environ_overrides={"SERVER_NAME": "localhost"}):
+    with app.test_request_context(
+            "/", environ_overrides={"SERVER_NAME": "localhost"}):
         pass
 
     app.config.update(SERVER_NAME="localhost:80")
     with app.test_request_context(
-        "/", environ_overrides={"SERVER_NAME": "localhost:80"}
-    ):
+            "/", environ_overrides={"SERVER_NAME": "localhost:80"}):
         pass
 
 
@@ -261,10 +255,9 @@ def test_session_dynamic_cookie_name():
 
     # first set the cookie in both /set urls but each with a different value
     assert test_client.post("/set", data={"value": "42"}).data == b"value set"
-    assert (
-        test_client.post("/set_dynamic_cookie", data={"value": "616"}).data
-        == b"value set"
-    )
+    assert (test_client.post("/set_dynamic_cookie", data={
+        "value": "616"
+    }).data == b"value set")
 
     # now check that the relevant values come back - meaning that different
     # cookies are being used for the urls that end with "dynamic cookie"

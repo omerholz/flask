@@ -10,14 +10,11 @@ from threading import Thread
 
 import pytest
 import werkzeug.serving
-from werkzeug.exceptions import BadRequest
-from werkzeug.exceptions import Forbidden
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import BadRequest, Forbidden, NotFound
 from werkzeug.http import parse_date
 from werkzeug.routing import BuildError
 
 import flask
-
 
 require_cpython_gc = pytest.mark.skipif(
     python_implementation() != "CPython",
@@ -192,11 +189,12 @@ def test_url_mapping(app, client):
 
 
 def test_werkzeug_routing(app, client):
-    from werkzeug.routing import Submount, Rule
+    from werkzeug.routing import Rule, Submount
 
     app.url_map.add(
-        Submount("/foo", [Rule("/bar", endpoint="bar"), Rule("/", endpoint="index")])
-    )
+        Submount("/foo",
+                 [Rule("/bar", endpoint="bar"),
+                  Rule("/", endpoint="index")]))
 
     def bar():
         return "bar"
@@ -212,11 +210,12 @@ def test_werkzeug_routing(app, client):
 
 
 def test_endpoint_decorator(app, client):
-    from werkzeug.routing import Submount, Rule
+    from werkzeug.routing import Rule, Submount
 
     app.url_map.add(
-        Submount("/foo", [Rule("/bar", endpoint="bar"), Rule("/", endpoint="index")])
-    )
+        Submount("/foo",
+                 [Rule("/bar", endpoint="bar"),
+                  Rule("/", endpoint="index")]))
 
     @app.endpoint("bar")
     def bar():
@@ -640,17 +639,15 @@ def test_extended_flashing(app):
 
     @app.route("/test_filter/")
     def test_filter():
-        messages = flask.get_flashed_messages(
-            category_filter=["message"], with_categories=True
-        )
+        messages = flask.get_flashed_messages(category_filter=["message"],
+                                              with_categories=True)
         assert list(messages) == [("message", "Hello World")]
         return ""
 
     @app.route("/test_filters/")
     def test_filters():
         messages = flask.get_flashed_messages(
-            category_filter=["message", "warning"], with_categories=True
-        )
+            category_filter=["message", "warning"], with_categories=True)
         assert list(messages) == [
             ("message", "Hello World"),
             ("warning", flask.Markup("<em>Testing</em>")),
@@ -659,7 +656,8 @@ def test_extended_flashing(app):
 
     @app.route("/test_filters_without_returning_categories/")
     def test_filters2():
-        messages = flask.get_flashed_messages(category_filter=["message", "warning"])
+        messages = flask.get_flashed_messages(
+            category_filter=["message", "warning"])
         assert len(messages) == 2
         assert messages[0] == "Hello World"
         assert messages[1] == flask.Markup("<em>Testing</em>")
@@ -1142,12 +1140,18 @@ def test_response_types(app, client):
         return (
             "Meh",
             400,
-            {"X-Foo": "Testing", "Content-Type": "text/plain; charset=utf-8"},
+            {
+                "X-Foo": "Testing",
+                "Content-Type": "text/plain; charset=utf-8"
+            },
         )
 
     @app.route("/text_headers")
     def from_text_headers():
-        return "Hello", {"X-Foo": "Test", "Content-Type": "text/plain; charset=utf-8"}
+        return "Hello", {
+            "X-Foo": "Test",
+            "Content-Type": "text/plain; charset=utf-8"
+        }
 
     @app.route("/text_status")
     def from_text_status():
@@ -1156,10 +1160,15 @@ def test_response_types(app, client):
     @app.route("/response_headers")
     def from_response_headers():
         return (
-            flask.Response(
-                "Hello world", 404, {"Content-Type": "text/html", "X-Foo": "Baz"}
-            ),
-            {"Content-Type": "text/plain", "X-Foo": "Bar", "X-Bar": "Foo"},
+            flask.Response("Hello world", 404, {
+                "Content-Type": "text/html",
+                "X-Foo": "Baz"
+            }),
+            {
+                "Content-Type": "text/plain",
+                "X-Foo": "Bar",
+                "X-Bar": "Foo"
+            },
         )
 
     @app.route("/response_status")
@@ -1224,7 +1233,7 @@ def test_response_type_errors():
 
     @app.route("/small_tuple")
     def from_small_tuple():
-        return ("Hello",)
+        return ("Hello", )
 
     @app.route("/large_tuple")
     def from_large_tuple():
@@ -1309,8 +1318,7 @@ def test_jsonify_prettyprint(app, req_ctx):
     app.config.update({"JSONIFY_PRETTYPRINT_REGULAR": True})
     compressed_msg = {"msg": {"submsg": "W00t"}, "msg2": "foobar"}
     pretty_response = (
-        b'{\n  "msg": {\n    "submsg": "W00t"\n  }, \n  "msg2": "foobar"\n}\n'
-    )
+        b'{\n  "msg": {\n    "submsg": "W00t"\n  }, \n  "msg2": "foobar"\n}\n')
 
     rv = flask.make_response(flask.jsonify(compressed_msg), 200)
     assert rv.data == pretty_response
@@ -1345,10 +1353,8 @@ def test_url_generation(app, req_ctx):
         pass
 
     assert flask.url_for("hello", name="test x") == "/hello/test%20x"
-    assert (
-        flask.url_for("hello", name="test x", _external=True)
-        == "http://localhost/hello/test%20x"
-    )
+    assert (flask.url_for("hello", name="test x",
+                          _external=True) == "http://localhost/hello/test%20x")
 
 
 def test_build_error_handler(app):
@@ -1365,7 +1371,8 @@ def test_build_error_handler(app):
     try:
         raise RuntimeError("Test case where BuildError is not current.")
     except RuntimeError:
-        pytest.raises(BuildError, app.handle_url_build_error, error, "spam", {})
+        pytest.raises(BuildError, app.handle_url_build_error, error, "spam",
+                      {})
 
     # Test a custom handler.
     def handler(error, endpoint, values):
@@ -1408,7 +1415,8 @@ def test_static_files(app, client):
     assert rv.status_code == 200
     assert rv.data.strip() == b"<h1>Hello World!</h1>"
     with app.test_request_context():
-        assert flask.url_for("static", filename="index.html") == "/static/index.html"
+        assert flask.url_for("static",
+                             filename="index.html") == "/static/index.html"
     rv.close()
 
 
@@ -1420,7 +1428,8 @@ def test_static_url_path():
     rv.close()
 
     with app.test_request_context():
-        assert flask.url_for("static", filename="index.html") == "/foo/index.html"
+        assert flask.url_for("static",
+                             filename="index.html") == "/foo/index.html"
 
 
 def test_static_url_path_with_ending_slash():
@@ -1431,7 +1440,8 @@ def test_static_url_path_with_ending_slash():
     rv.close()
 
     with app.test_request_context():
-        assert flask.url_for("static", filename="index.html") == "/foo/index.html"
+        assert flask.url_for("static",
+                             filename="index.html") == "/foo/index.html"
 
 
 def test_static_url_empty_path(app):
@@ -1537,7 +1547,8 @@ def test_server_name_subdomain():
 
 
 @pytest.mark.filterwarnings("ignore::pytest.PytestUnraisableExceptionWarning")
-@pytest.mark.filterwarnings("ignore::pytest.PytestUnhandledThreadExceptionWarning")
+@pytest.mark.filterwarnings(
+    "ignore::pytest.PytestUnhandledThreadExceptionWarning")
 def test_exception_propagation(app, client):
     def apprunner(config_key):
         @app.route("/")
@@ -1556,7 +1567,7 @@ def test_exception_propagation(app, client):
     # not torn down.  This causes other tests that run after this fail
     # when they expect no exception on the stack.
     for config_key in "TESTING", "PROPAGATE_EXCEPTIONS", "DEBUG", None:
-        t = Thread(target=apprunner, args=(config_key,))
+        t = Thread(target=apprunner, args=(config_key, ))
         t.start()
         t.join()
 
@@ -1565,9 +1576,8 @@ def test_exception_propagation(app, client):
 @pytest.mark.parametrize("use_debugger", [True, False])
 @pytest.mark.parametrize("use_reloader", [True, False])
 @pytest.mark.parametrize("propagate_exceptions", [None, True, False])
-def test_werkzeug_passthrough_errors(
-    monkeypatch, debug, use_debugger, use_reloader, propagate_exceptions, app
-):
+def test_werkzeug_passthrough_errors(monkeypatch, debug, use_debugger,
+                                     use_reloader, propagate_exceptions, app):
     rv = {}
 
     # Mocks werkzeug.serving.run_simple method
@@ -1604,8 +1614,7 @@ def test_url_processors(app, client):
     @app.url_defaults
     def add_language_code(endpoint, values):
         if flask.g.lang_code is not None and app.url_map.is_endpoint_expecting(
-            endpoint, "lang_code"
-        ):
+                endpoint, "lang_code"):
             values.setdefault("lang_code", flask.g.lang_code)
 
     @app.url_value_preprocessor
@@ -1734,8 +1743,7 @@ def test_routing_redirect_debugging(app, client):
             client.post("/foo", data={})
         assert "http://localhost/foo/" in str(e.value)
         assert "Make sure to directly send your POST-request to this URL" in str(
-            e.value
-        )
+            e.value)
 
         rv = client.get("/foo", data={}, follow_redirects=True)
         assert rv.data == b"success"
@@ -1970,9 +1978,8 @@ def test_run_server_port(monkeypatch, app):
         (None, None, "localhost:0", "localhost", 0),
     ),
 )
-def test_run_from_config(
-    monkeypatch, host, port, server_name, expect_host, expect_port, app
-):
+def test_run_from_config(monkeypatch, host, port, server_name, expect_host,
+                         expect_port, app):
     def run_simple_mock(hostname, port, *args, **kwargs):
         assert hostname == expect_host
         assert port == expect_port

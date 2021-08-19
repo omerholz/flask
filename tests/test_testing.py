@@ -6,8 +6,7 @@ import flask
 from flask import appcontext_popped
 from flask.cli import ScriptInfo
 from flask.json import jsonify
-from flask.testing import EnvironBuilder
-from flask.testing import FlaskCliRunner
+from flask.testing import EnvironBuilder, FlaskCliRunner
 
 try:
     import blinker

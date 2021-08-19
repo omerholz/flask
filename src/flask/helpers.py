@@ -4,10 +4,8 @@ import socket
 import sys
 import typing as t
 import warnings
-from datetime import datetime
-from datetime import timedelta
-from functools import lru_cache
-from functools import update_wrapper
+from datetime import datetime, timedelta
+from functools import lru_cache, update_wrapper
 from threading import RLock
 
 import werkzeug.utils
@@ -15,11 +13,7 @@ from werkzeug.exceptions import NotFound
 from werkzeug.routing import BuildError
 from werkzeug.urls import url_quote
 
-from .globals import _app_ctx_stack
-from .globals import _request_ctx_stack
-from .globals import current_app
-from .globals import request
-from .globals import session
+from .globals import _app_ctx_stack, _request_ctx_stack, current_app, request, session
 from .signals import message_flashed
 
 if t.TYPE_CHECKING:
@@ -64,9 +58,8 @@ def get_load_dotenv(default: bool = True) -> bool:
 
 
 def stream_with_context(
-    generator_or_function: t.Union[
-        t.Iterator[t.AnyStr], t.Callable[..., t.Iterator[t.AnyStr]]
-    ]
+    generator_or_function: t.Union[t.Iterator[t.AnyStr],
+                                   t.Callable[..., t.Iterator[t.AnyStr]]]
 ) -> t.Iterator[t.AnyStr]:
     """Request contexts disappear when the response is started on the server.
     This is done for efficiency reasons and to make it less likely to encounter
@@ -116,8 +109,7 @@ def stream_with_context(
         if ctx is None:
             raise RuntimeError(
                 "Attempted to stream with context but "
-                "there was no context in the first place to keep around."
-            )
+                "there was no context in the first place to keep around.")
         with ctx:
             # Dummy sentinel.  Has to be inside the context block or we're
             # not actually keeping the context around.
@@ -274,8 +266,7 @@ def url_for(endpoint: str, **values: t.Any) -> str:
         raise RuntimeError(
             "Attempted to generate a URL without the application context being"
             " pushed. This has to be executed when application context is"
-            " available."
-        )
+            " available.")
 
     # If request specific information is available we have some extra
     # features that support "relative" URLs.
@@ -300,8 +291,7 @@ def url_for(endpoint: str, **values: t.Any) -> str:
             raise RuntimeError(
                 "Application was not able to create a URL adapter for request"
                 " independent URL generation. You might be able to fix this by"
-                " setting the SERVER_NAME config variable."
-            )
+                " setting the SERVER_NAME config variable.")
 
         external = values.pop("_external", True)
 
@@ -322,9 +312,10 @@ def url_for(endpoint: str, **values: t.Any) -> str:
 
     try:
         try:
-            rv = url_adapter.build(
-                endpoint, values, method=method, force_external=external
-            )
+            rv = url_adapter.build(endpoint,
+                                   values,
+                                   method=method,
+                                   force_external=external)
         finally:
             if old_scheme is not None:
                 url_adapter.url_scheme = old_scheme
@@ -361,7 +352,8 @@ def get_template_attribute(template_name: str, attribute: str) -> t.Any:
     :param template_name: the name of the template
     :param attribute: the name of the variable of macro to access
     """
-    return getattr(current_app.jinja_env.get_template(template_name).module, attribute)
+    return getattr(
+        current_app.jinja_env.get_template(template_name).module, attribute)
 
 
 def flash(message: str, category: str = "message") -> None:
@@ -397,7 +389,8 @@ def flash(message: str, category: str = "message") -> None:
 
 
 def get_flashed_messages(
-    with_categories: bool = False, category_filter: t.Iterable[str] = ()
+    with_categories: bool = False,
+    category_filter: t.Iterable[str] = ()
 ) -> t.Union[t.List[str], t.List[t.Tuple[str, str]]]:
     """Pulls all flashed messages from the session and returns them.
     Further calls in the same request to the function will return
@@ -430,8 +423,7 @@ def get_flashed_messages(
     flashes = _request_ctx_stack.top.flashes
     if flashes is None:
         _request_ctx_stack.top.flashes = flashes = (
-            session.pop("_flashes") if "_flashes" in session else []
-        )
+            session.pop("_flashes") if "_flashes" in session else [])
     if category_filter:
         flashes = list(filter(lambda f: f[0] in category_filter, flashes))
     if not with_categories:
@@ -444,9 +436,8 @@ def _prepare_send_file_kwargs(
     attachment_filename: t.Optional[str] = None,
     etag: t.Optional[t.Union[bool, str]] = None,
     add_etags: t.Optional[t.Union[bool]] = None,
-    max_age: t.Optional[
-        t.Union[int, t.Callable[[t.Optional[str]], t.Optional[int]]]
-    ] = None,
+    max_age: t.Optional[t.Union[int, t.Callable[[t.Optional[str]],
+                                                t.Optional[int]]]] = None,
     cache_timeout: t.Optional[int] = None,
     **kwargs: t.Any,
 ) -> t.Dict[str, t.Any]:
@@ -503,9 +494,8 @@ def send_file(
     etag: t.Union[bool, str] = True,
     add_etags: t.Optional[bool] = None,
     last_modified: t.Optional[t.Union[datetime, int, float]] = None,
-    max_age: t.Optional[
-        t.Union[int, t.Callable[[t.Optional[str]], t.Optional[int]]]
-    ] = None,
+    max_age: t.Optional[t.Union[int, t.Callable[[t.Optional[str]],
+                                                t.Optional[int]]]] = None,
     cache_timeout: t.Optional[int] = None,
 ):
     """Send the contents of a file to the client.
@@ -609,22 +599,20 @@ def send_file(
 
     .. versionadded:: 0.2
     """
-    return werkzeug.utils.send_file(
-        **_prepare_send_file_kwargs(
-            path_or_file=path_or_file,
-            environ=request.environ,
-            mimetype=mimetype,
-            as_attachment=as_attachment,
-            download_name=download_name,
-            attachment_filename=attachment_filename,
-            conditional=conditional,
-            etag=etag,
-            add_etags=add_etags,
-            last_modified=last_modified,
-            max_age=max_age,
-            cache_timeout=cache_timeout,
-        )
-    )
+    return werkzeug.utils.send_file(**_prepare_send_file_kwargs(
+        path_or_file=path_or_file,
+        environ=request.environ,
+        mimetype=mimetype,
+        as_attachment=as_attachment,
+        download_name=download_name,
+        attachment_filename=attachment_filename,
+        conditional=conditional,
+        etag=etag,
+        add_etags=add_etags,
+        last_modified=last_modified,
+        max_age=max_age,
+        cache_timeout=cache_timeout,
+    ))
 
 
 def safe_join(directory: str, *pathnames: str) -> str:
@@ -698,8 +686,7 @@ def send_from_directory(
         path = filename
 
     return werkzeug.utils.send_from_directory(  # type: ignore
-        directory, path, **_prepare_send_file_kwargs(**kwargs)
-    )
+        directory, path, **_prepare_send_file_kwargs(**kwargs))
 
 
 def get_root_path(import_name: str) -> str:
@@ -744,8 +731,7 @@ def get_root_path(import_name: str) -> str:
                 " came from an import hook that does not provide file"
                 " name information or because it's a namespace package."
                 " In this case the root path needs to be explicitly"
-                " provided."
-            )
+                " provided.")
 
     # filepath is import_name.py for a module, or __init__.py for a package.
     return os.path.dirname(os.path.abspath(filepath))

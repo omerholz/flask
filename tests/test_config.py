@@ -7,7 +7,6 @@ import pytest
 
 import flask
 
-
 # config keys used for the TestConfig
 TEST_KEY = "foo"
 SECRET_KEY = "config"
@@ -34,7 +33,8 @@ def test_config_from_object():
 def test_config_from_file():
     app = flask.Flask(__name__)
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    app.config.from_file(os.path.join(current_dir, "static", "config.json"), json.load)
+    app.config.from_file(os.path.join(current_dir, "static", "config.json"),
+                         json.load)
     common_object_test(app)
 
 
@@ -76,9 +76,8 @@ def test_config_from_envvar(monkeypatch):
         assert "'FOO_SETTINGS' is not set" in str(e.value)
     assert not app.config.from_envvar("FOO_SETTINGS", silent=True)
 
-    monkeypatch.setattr(
-        "os.environ", {"FOO_SETTINGS": f"{__file__.rsplit('.', 1)[0]}.py"}
-    )
+    monkeypatch.setattr("os.environ",
+                        {"FOO_SETTINGS": f"{__file__.rsplit('.', 1)[0]}.py"})
     assert app.config.from_envvar("FOO_SETTINGS")
     common_object_test(app)
 
@@ -117,7 +116,8 @@ def test_config_missing_file():
         "[Errno 2] Unable to load configuration file (No such file or directory):"
     )
     assert msg.endswith("missing.json'")
-    assert not app.config.from_file("missing.json", load=json.load, silent=True)
+    assert not app.config.from_file(
+        "missing.json", load=json.load, silent=True)
 
 
 def test_custom_config_class():
@@ -165,9 +165,9 @@ def test_get_namespace():
     assert 2 == len(foo_options)
     assert "foo option 1" == foo_options["foo_option_1"]
     assert "foo option 2" == foo_options["foo_option_2"]
-    bar_options = app.config.get_namespace(
-        "BAR_", lowercase=False, trim_namespace=False
-    )
+    bar_options = app.config.get_namespace("BAR_",
+                                           lowercase=False,
+                                           trim_namespace=False)
     assert 2 == len(bar_options)
     assert "bar stuff 1" == bar_options["BAR_STUFF_1"]
     assert "bar stuff 2" == bar_options["BAR_STUFF_2"]
@@ -177,13 +177,10 @@ def test_get_namespace():
 def test_from_pyfile_weird_encoding(tmpdir, encoding):
     f = tmpdir.join("my_config.py")
     f.write_binary(
-        textwrap.dedent(
-            f"""
+        textwrap.dedent(f"""
             # -*- coding: {encoding} -*-
             TEST_VALUE = "föö"
-            """
-        ).encode(encoding)
-    )
+            """).encode(encoding))
     app = flask.Flask(__name__)
     app.config.from_pyfile(str(f))
     value = app.config["TEST_VALUE"]

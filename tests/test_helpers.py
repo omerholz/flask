@@ -4,8 +4,7 @@ import os
 import pytest
 
 import flask
-from flask.helpers import get_debug_flag
-from flask.helpers import get_env
+from flask.helpers import get_debug_flag, get_env
 
 
 class FakePath:
@@ -90,9 +89,8 @@ class TestSendfile:
             rv.close()
 
     def test_send_from_directory(self, app, req_ctx):
-        app.root_path = os.path.join(
-            os.path.dirname(__file__), "test_apps", "subdomaintestmodule"
-        )
+        app.root_path = os.path.join(os.path.dirname(__file__), "test_apps",
+                                     "subdomaintestmodule")
         rv = flask.send_from_directory("static", "hello.txt")
         rv.direct_passthrough = False
         assert rv.data.strip() == b"Hello Subdomain"
@@ -112,10 +110,8 @@ class TestUrlFor:
         def index():
             return "42"
 
-        assert (
-            flask.url_for("index", _external=True, _scheme="https")
-            == "https://localhost/"
-        )
+        assert (flask.url_for("index", _external=True,
+                              _scheme="https") == "https://localhost/")
 
     def test_url_for_with_scheme_not_external(self, app, req_ctx):
         @app.route("/")
@@ -130,10 +126,8 @@ class TestUrlFor:
             return "42"
 
         assert flask.url_for("index", _external=True) == "http://localhost/"
-        assert (
-            flask.url_for("index", _external=True, _scheme="https")
-            == "https://localhost/"
-        )
+        assert (flask.url_for("index", _external=True,
+                              _scheme="https") == "https://localhost/")
         assert flask.url_for("index", _external=True) == "http://localhost/"
 
     def test_url_with_method(self, app, req_ctx):
@@ -170,7 +164,8 @@ class TestNoImports:
     """
 
     def test_name_with_import_error(self, modules_tmpdir):
-        modules_tmpdir.join("importerror.py").write("raise NotImplementedError()")
+        modules_tmpdir.join("importerror.py").write(
+            "raise NotImplementedError()")
         try:
             flask.Flask("importerror")
         except NotImplementedError:
@@ -230,7 +225,8 @@ class TestStreaming:
                 yield flask.request.args["name"]
                 yield "!"
 
-            return flask.Response(flask.stream_with_context(Wrapper(generate())))
+            return flask.Response(
+                flask.stream_with_context(Wrapper(generate())))
 
         rv = client.get("/?name=World")
         assert rv.data == b"Hello World!"
@@ -262,9 +258,8 @@ class TestHelpers:
             ("True", True, True),
         ],
     )
-    def test_get_debug_flag(
-        self, monkeypatch, debug, expected_flag, expected_default_flag
-    ):
+    def test_get_debug_flag(self, monkeypatch, debug, expected_flag,
+                            expected_default_flag):
         monkeypatch.setenv("FLASK_DEBUG", debug)
         if expected_flag is None:
             assert get_debug_flag() is None

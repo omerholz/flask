@@ -1,8 +1,7 @@
 import typing as t
 from functools import partial
 
-from werkzeug.local import LocalProxy
-from werkzeug.local import LocalStack
+from werkzeug.local import LocalProxy, LocalStack
 
 if t.TYPE_CHECKING:
     from .app import Flask
@@ -52,8 +51,9 @@ def _find_app():
 _request_ctx_stack = LocalStack()
 _app_ctx_stack = LocalStack()
 current_app: "Flask" = LocalProxy(_find_app)  # type: ignore
-request: "Request" = LocalProxy(partial(_lookup_req_object, "request"))  # type: ignore
+request: "Request" = LocalProxy(partial(_lookup_req_object,
+                                        "request"))  # type: ignore
 session: "SessionMixin" = LocalProxy(  # type: ignore
-    partial(_lookup_req_object, "session")
-)
-g: "_AppCtxGlobals" = LocalProxy(partial(_lookup_app_object, "g"))  # type: ignore
+    partial(_lookup_req_object, "session"))
+g: "_AppCtxGlobals" = LocalProxy(partial(_lookup_app_object,
+                                         "g"))  # type: ignore

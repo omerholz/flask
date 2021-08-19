@@ -3,11 +3,8 @@ import sys
 
 import pytest
 
-from flask import Blueprint
-from flask import Flask
-from flask import request
-from flask.views import MethodView
-from flask.views import View
+from flask import Blueprint, Flask, request
+from flask.views import MethodView, View
 
 pytest.importorskip("asgiref")
 
@@ -74,13 +71,15 @@ def _async_app():
     app.register_blueprint(blueprint, url_prefix="/bp")
 
     app.add_url_rule("/view", view_func=AsyncView.as_view("view"))
-    app.add_url_rule("/methodview", view_func=AsyncMethodView.as_view("methodview"))
+    app.add_url_rule("/methodview",
+                     view_func=AsyncMethodView.as_view("methodview"))
 
     return app
 
 
 @pytest.mark.skipif(sys.version_info < (3, 7), reason="requires Python >= 3.7")
-@pytest.mark.parametrize("path", ["/", "/home", "/bp/", "/view", "/methodview"])
+@pytest.mark.parametrize("path",
+                         ["/", "/home", "/bp/", "/view", "/methodview"])
 def test_async_route(path, async_app):
     test_client = async_app.test_client()
     response = test_client.get(path)
@@ -156,7 +155,8 @@ def test_async_before_after_request():
     assert bp_after_called
 
 
-@pytest.mark.skipif(sys.version_info >= (3, 7), reason="should only raise Python < 3.7")
+@pytest.mark.skipif(sys.version_info >= (3, 7),
+                    reason="should only raise Python < 3.7")
 def test_async_runtime_error():
     app = Flask(__name__)
     with pytest.raises(RuntimeError):

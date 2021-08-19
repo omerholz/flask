@@ -1,13 +1,10 @@
 import typing as t
 
-from .globals import current_app
-from .globals import request
+from .globals import current_app, request
 from .typing import ResponseReturnValue
 
-
 http_method_funcs = frozenset(
-    ["get", "post", "head", "options", "delete", "put", "trace", "patch"]
-)
+    ["get", "post", "head", "options", "delete", "put", "trace", "patch"])
 
 
 class View:
@@ -67,9 +64,8 @@ class View:
         raise NotImplementedError()
 
     @classmethod
-    def as_view(
-        cls, name: str, *class_args: t.Any, **class_kwargs: t.Any
-    ) -> t.Callable:
+    def as_view(cls, name: str, *class_args: t.Any,
+                **class_kwargs: t.Any) -> t.Callable:
         """Converts the class into an actual view function that can be used
         with the routing system.  Internally this generates a function on the
         fly which will instantiate the :class:`View` on each request and call
@@ -78,10 +74,10 @@ class View:
         The arguments passed to :meth:`as_view` are forwarded to the
         constructor of the class.
         """
-
         def view(*args: t.Any, **kwargs: t.Any) -> ResponseReturnValue:
             self = view.view_class(*class_args, **class_kwargs)  # type: ignore
-            return current_app.ensure_sync(self.dispatch_request)(*args, **kwargs)
+            return current_app.ensure_sync(self.dispatch_request)(*args,
+                                                                  **kwargs)
 
         if cls.decorators:
             view.__name__ = name
@@ -107,7 +103,6 @@ class MethodViewType(type):
     """Metaclass for :class:`MethodView` that determines what methods the view
     defines.
     """
-
     def __init__(cls, name, bases, d):
         super().__init__(name, bases, d)
 
@@ -146,7 +141,8 @@ class MethodView(View, metaclass=MethodViewType):
         app.add_url_rule('/counter', view_func=CounterAPI.as_view('counter'))
     """
 
-    def dispatch_request(self, *args: t.Any, **kwargs: t.Any) -> ResponseReturnValue:
+    def dispatch_request(self, *args: t.Any,
+                         **kwargs: t.Any) -> ResponseReturnValue:
         meth = getattr(self, request.method.lower(), None)
 
         # If the request method is HEAD and we don't have a handler for it
