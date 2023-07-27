@@ -16,7 +16,7 @@ backports.entry-points-selectable==1.1.0
     # via virtualenv
 blinker==1.4
     # via -r requirements/tests.in
-certifi==2021.5.30
+certifi==2023.7.22
     # via requests
 cffi==1.14.6
     # via cryptography
