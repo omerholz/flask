@@ -16,7 +16,7 @@ docutils==0.16
     # via
     #   sphinx
     #   sphinx-tabs
-idna==3.2
+idna==3.7
     # via requests
 imagesize==1.2.0
     # via sphinx
